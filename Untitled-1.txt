@@ -1,0 +1,3 @@
+cd C:\Users\Administrator\AppData\Local\Android\sdk\tools\bin
+sdkmanager --update
+sdkmanager "platforms;android-33"

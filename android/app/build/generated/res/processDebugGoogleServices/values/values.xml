@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">917835733769</string>
+    <string name="google_api_key" translatable="false">AIzaSyAI0kI1Tt5o6L1xxZJQQNBuYhflwiDELWo</string>
+    <string name="google_app_id" translatable="false">1:917835733769:android:517ca3e287f8f5ba2051d8</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyAI0kI1Tt5o6L1xxZJQQNBuYhflwiDELWo</string>
+    <string name="google_storage_bucket" translatable="false">monappmealplanning.firebasestorage.app</string>
+    <string name="project_id" translatable="false">monappmealplanning</string>
+</resources>

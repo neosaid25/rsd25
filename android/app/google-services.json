@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "917835733769",
+    "project_id": "monappmealplanning",
+    "storage_bucket": "monappmealplanning.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:917835733769:android:517ca3e287f8f5ba2051d8",
+        "android_client_info": {
+          "package_name": "com.example.monappmealplanning"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAI0kI1Tt5o6L1xxZJQQNBuYhflwiDELWo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
