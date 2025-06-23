@@ -5,6 +5,8 @@ import 'package:monappmealplanning/app/presentation/meal_planning/screens/weekly
 import 'package:monappmealplanning/app/presentation/meal_planning/screens/monthly_meal_planning_screen.dart';
 import 'package:monappmealplanning/app/domain/models/recipe_model.dart';
 import 'package:monappmealplanning/app/data/services/recipe_service.dart';
+import 'package:monappmealplanning/app/data/services/shopping_list_service.dart';
+import 'package:monappmealplanning/app/presentation/shopping_list/screens/shopping_list_screen.dart';
 
 class MyPlansScreen extends StatefulWidget {
   const MyPlansScreen({Key? key}) : super(key: key);
@@ -18,6 +20,7 @@ class _MyPlansScreenState extends State<MyPlansScreen>
   late TabController _tabController;
   final MealPlanService _mealPlanService = MealPlanService();
   final RecipeService _recipeService = RecipeService();
+  final ShoppingListService _shoppingListService = ShoppingListService();
   bool _isLoading = false;
 
   List<Map<String, dynamic>> _weeklyPlans = [];
@@ -79,6 +82,150 @@ class _MyPlansScreenState extends State<MyPlansScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  // إنشاء قائمة تسوق من خطة أسبوعية
+  Future<void> _generateShoppingListFromWeeklyPlan(String weekStartDate) async {
+    try {
+      // عرض مؤشر التحميل
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      final shoppingItems = await _shoppingListService
+          .generateShoppingListFromWeeklyPlan(weekStartDate);
+
+      // إغلاق مؤشر التحميل
+      if (mounted) Navigator.pop(context);
+
+      if (shoppingItems.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('لا توجد مكونات في هذه الخطة لإنشاء قائمة تسوق'),
+            ),
+          );
+        }
+        return;
+      }
+
+      // إنشاء مفتاح للوصول إلى حالة قائمة التسوق
+      final shoppingListKey = GlobalKey<ShoppingListScreenState>();
+
+      // الانتقال إلى شاشة قائمة التسوق
+      if (mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ShoppingListScreen(
+              key: shoppingListKey,
+              items: const [],
+            ),
+          ),
+        );
+
+        // إضافة العناصر بعد بناء الشاشة
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          shoppingListKey.currentState?.addItemsFromShoppingList(shoppingItems);
+        });
+
+        // عرض رسالة نجاح
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('تم إنشاء قائمة تسوق تحتوي على ${shoppingItems.length} عنصر'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      // إغلاق مؤشر التحميل في حالة الخطأ
+      if (mounted && Navigator.canPop(context)) Navigator.pop(context);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطأ في إنشاء قائمة التسوق: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // إنشاء قائمة تسوق من خطة شهرية
+  Future<void> _generateShoppingListFromMonthlyPlan(String monthStartDate) async {
+    try {
+      // عرض مؤشر التحميل
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      final shoppingItems = await _shoppingListService
+          .generateShoppingListFromMonthlyPlan(monthStartDate);
+
+      // إغلاق مؤشر التحميل
+      if (mounted) Navigator.pop(context);
+
+      if (shoppingItems.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('لا توجد مكونات في هذه الخطة لإنشاء قائمة تسوق'),
+            ),
+          );
+        }
+        return;
+      }
+
+      // إنشاء مفتاح للوصول إلى حالة قائمة التسوق
+      final shoppingListKey = GlobalKey<ShoppingListScreenState>();
+
+      // الانتقال إلى شاشة قائمة التسوق
+      if (mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ShoppingListScreen(
+              key: shoppingListKey,
+              items: const [],
+            ),
+          ),
+        );
+
+        // إضافة العناصر بعد بناء الشاشة
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          shoppingListKey.currentState?.addItemsFromShoppingList(shoppingItems);
+        });
+
+        // عرض رسالة نجاح
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('تم إنشاء قائمة تسوق شهرية تحتوي على ${shoppingItems.length} عنصر'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      // إغلاق مؤشر التحميل في حالة الخطأ
+      if (mounted && Navigator.canPop(context)) Navigator.pop(context);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطأ في إنشاء قائمة التسوق: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _openWeeklyPlan(String weekStartDate) {
@@ -186,6 +333,11 @@ class _MyPlansScreenState extends State<MyPlansScreen>
                     Row(
                       children: [
                         IconButton(
+                          icon: const Icon(Icons.shopping_cart, color: Colors.green),
+                          tooltip: 'إنشاء قائمة تسوق',
+                          onPressed: () => _generateShoppingListFromWeeklyPlan(weekStartDate),
+                        ),
+                        IconButton(
                           icon: const Icon(Icons.edit, color: Colors.blue),
                           onPressed: () => _openWeeklyPlan(weekStartDate),
                         ),
@@ -284,6 +436,24 @@ class _MyPlansScreenState extends State<MyPlansScreen>
   // باقي الدوال (المخططات الشهرية، الحذف، إلخ...) تبقى كما هي
   // ... (أضف هنا الدوال الأخرى مثل _buildMonthlyPlansList, _deleteWeeklyPlan, etc.)
 
+  void _openWeeklyPlan(String weekStartDate) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const WeeklyMealPlanningScreen(),
+      ),
+    );
+  }
+
+  void _openMonthlyPlan(String monthStartDate) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MonthlyMealPlanningScreen(),
+      ),
+    );
+  }
+
   void _deleteWeeklyPlan(String weekStartDate) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -362,6 +532,11 @@ class _MyPlansScreenState extends State<MyPlansScreen>
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            IconButton(
+              icon: const Icon(Icons.shopping_cart, color: Colors.green),
+              tooltip: 'إنشاء قائمة تسوق',
+              onPressed: () => _generateShoppingListFromMonthlyPlan(monthStartDate),
+            ),
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.blue),
               onPressed: () => _openMonthlyPlan(monthStartDate),

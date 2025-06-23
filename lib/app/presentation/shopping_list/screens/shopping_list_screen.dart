@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:monappmealplanning/app/domain/models/shopping_list_model.dart';
 
 // Temporary replacement for Share functionality
 class ShareService {
@@ -379,5 +380,52 @@ class ShoppingListScreenState extends State<ShoppingListScreen> {
   // Public method to show add item dialog
   void showAddItemDialog() {
     _showAddItemDialog();
+  }
+
+  // Public method to add items from external source (like meal plans)
+  void addItemsFromShoppingList(List<ShoppingItem> shoppingItems) {
+    setState(() {
+      for (var shoppingItem in shoppingItems) {
+        final category = shoppingItem.category.isEmpty ? 'عام' : shoppingItem.category;
+
+        // Convert ShoppingItem to ShoppingListItem
+        final item = ShoppingListItem(
+          name: shoppingItem.name,
+          quantity: '${shoppingItem.quantity} ${shoppingItem.unit}'.trim(),
+          category: category,
+          isChecked: false,
+        );
+
+        if (!_categorizedItems.containsKey(category)) {
+          _categorizedItems[category] = [];
+        }
+
+        // Check if item already exists to avoid duplicates
+        final existingItemIndex = _categorizedItems[category]!.indexWhere(
+          (existingItem) => existingItem.name.toLowerCase() == item.name.toLowerCase(),
+        );
+
+        if (existingItemIndex != -1) {
+          // Update existing item quantity
+          final existingItem = _categorizedItems[category]![existingItemIndex];
+          existingItem.quantity = '${existingItem.quantity} + ${item.quantity}';
+        } else {
+          // Add new item
+          _categorizedItems[category]!.add(item);
+        }
+      }
+    });
+  }
+
+  // Public method to clear all items
+  void clearAllItems() {
+    setState(() {
+      _categorizedItems.clear();
+    });
+  }
+
+  // Public method to get current items count
+  int get itemsCount {
+    return _categorizedItems.values.fold(0, (sum, items) => sum + items.length);
   }
 }
